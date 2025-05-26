@@ -7,8 +7,14 @@ from unittest.mock import patch
 import jwt
 import datetime
 
+from src.fit.app import create_app
+
 class TestUserAPI(unittest.TestCase):
     def setUp(self):
+        self.app = create_app()
+        self.app.config['TESTING'] = True
+        self.client = self.app.test_client()
+
         # Configure the app for testing
         app.config['TESTING'] = True
         self.client = app.test_client()
@@ -23,9 +29,9 @@ class TestUserAPI(unittest.TestCase):
             "name": "Test Admin",
             "role": "admin",
             "iss": "fit-api",
-            "iat": datetime.datetime.now(datetime.UTC),
-            "exp": datetime.datetime.now(datetime.UTC) + datetime.timedelta(minutes=30)
-        }
+            "iat": datetime.datetime.now(datetime.timezone.utc),
+            "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+            }
         self.admin_token = jwt.encode(token_data, "fit-secret-key", algorithm="HS256")
         
     def tearDown(self):
@@ -74,7 +80,7 @@ class TestUserAPI(unittest.TestCase):
         )
         
         # Assert response
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 400)
         data = json.loads(response.data)
         self.assertIn('error', data)
 
