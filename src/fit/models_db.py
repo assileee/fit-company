@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Float, Integer, Boolean, ForeignKey, Table, Text
+from sqlalchemy import Column, String, Float, Integer, Boolean, ForeignKey, Table, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
+from datetime import datetime
 from .database import Base
 
 class UserModel(Base):
@@ -11,16 +12,16 @@ class UserModel(Base):
     role = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
     
-    # Profile information (nullable as they'll be filled during onboarding)
     weight = Column(Float, nullable=True)
     height = Column(Float, nullable=True)
     fitness_goal = Column(String, nullable=True)
     onboarded = Column(String, default="false", nullable=False)
 
+    exercise_history = relationship("UserExerciseHistory", back_populates="user", cascade="all, delete-orphan")
+
     def __repr__(self):
         return f"<User(email='{self.email}', name='{self.name}', role='{self.role}')>"
 
-# Junction table for the many-to-many relationship between exercises and muscle groups
 exercise_muscle_groups = Table(
     "exercise_muscle_groups",
     Base.metadata,
@@ -37,7 +38,6 @@ class MuscleGroupModel(Base):
     body_part = Column(String(50), nullable=False)
     description = Column(Text)
     
-    # Relationship to exercises
     exercises = relationship(
         "ExerciseModel", 
         secondary=exercise_muscle_groups,
@@ -57,7 +57,6 @@ class ExerciseModel(Base):
     equipment = Column(String(100))
     instructions = Column(Text)
     
-    # Relationship to muscle groups
     muscle_groups = relationship(
         "MuscleGroupModel",
         secondary=exercise_muscle_groups,
@@ -66,3 +65,15 @@ class ExerciseModel(Base):
 
     def __repr__(self):
         return f"<Exercise(id={self.id}, name='{self.name}', difficulty={self.difficulty})>" 
+
+
+class UserExerciseHistory(Base):
+    __tablename__ = "user_exercise_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, ForeignKey("users.email"), nullable=False)
+    exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
+    date_done = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+    user = relationship("UserModel", back_populates="exercise_history")
+    exercise = relationship("ExerciseModel")
