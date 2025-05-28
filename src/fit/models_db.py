@@ -17,8 +17,6 @@ class UserModel(Base):
     fitness_goal = Column(String, nullable=True)
     onboarded = Column(String, default="false", nullable=False)
 
-    exercise_history = relationship("UserExerciseHistory", back_populates="user", cascade="all, delete-orphan")
-
     def __repr__(self):
         return f"<User(email='{self.email}', name='{self.name}', role='{self.role}')>"
 
@@ -67,13 +65,3 @@ class ExerciseModel(Base):
         return f"<Exercise(id={self.id}, name='{self.name}', difficulty={self.difficulty})>" 
 
 
-class UserExerciseHistory(Base):
-    __tablename__ = "user_exercise_history"
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_email = Column(String, ForeignKey("users.email"), nullable=False)
-    exercise_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
-    date_done = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    user = relationship("UserModel", back_populates="exercise_history")
-    exercise = relationship("ExerciseModel")

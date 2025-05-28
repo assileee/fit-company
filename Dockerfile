@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port Flask runs on
-EXPOSE 5000
+EXPOSE 5001
 
 # Set environment variables
 ENV FLASK_APP=src/fit/app.py

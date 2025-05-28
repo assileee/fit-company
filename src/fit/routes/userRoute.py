@@ -1,6 +1,7 @@
+from ast import List
 from flask import Blueprint, request, jsonify, g
 from pydantic import ValidationError
-from ..models_dto import UserSchema, UserProfileSchema
+from ..models_dto import Exercise, UserSchema, UserProfileSchema
 from ..services.user_service import create_user as create_user_service, get_all_users as get_all_users_service, update_user_profile, get_user_profile
 from ..database import db_session
 from ..models_db import UserModel
@@ -90,15 +91,3 @@ def get_profile():
     except Exception as e:
         return jsonify({"error": "Error retrieving profile", "details": str(e)}), 500
 
-from fastapi import APIRouter, Depends, HTTPException
-from ..services.user_service import generate_wod_for_user
-
-router = APIRouter()
-
-@router.get("/users/{email}/wod", response_model=List[Exercise])
-def get_wod(email: str):
-    try:
-        wod = generate_wod_for_user(email)
-        return wod
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

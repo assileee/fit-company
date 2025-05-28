@@ -17,7 +17,9 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(fitness_bp)
 
 def create_app():
+    app.run(host="0.0.0.0", port=5001, debug=True)
+
     return app
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    create_app()  # pragma: no cover
