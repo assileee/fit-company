@@ -16,7 +16,7 @@ def get_exercises():
             exercises = get_exercises_by_muscle_group(int(muscle_group_id))
         else:
             exercises = get_all_exercises()
-        return jsonify([ex.model_dump() for ex in exercises]), 200
+        return jsonify([ex.dict() for ex in exercises]), 200  
     except Exception as e:
         return jsonify({"error": "Error retrieving exercises", "details": str(e)}), 500
 
@@ -26,7 +26,7 @@ def get_exercise(exercise_id):
         exercise = get_exercise_by_id(exercise_id)
         if not exercise:
             return jsonify({"error": "Exercise not found"}), 404
-        return jsonify(exercise.model_dump()), 200
+        return jsonify(exercise.dict()), 200  
     except Exception as e:
         return jsonify({"error": "Error retrieving exercise", "details": str(e)}), 500
 
@@ -61,10 +61,10 @@ def get_wod():
 
         response = WodResponseSchema(
             exercises=wod_exercises,
-            generated_at=datetime.datetime.now(datetime.UTC).isoformat()
+            generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat()
         )
 
-        return jsonify(response.model_dump()), 200
+        return jsonify(response.dict()), 200  
 
     except Exception as e:
         return jsonify({"error": "Error generating workout of the day", "details": str(e)}), 500

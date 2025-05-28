@@ -1,4 +1,3 @@
-from ast import List
 from flask import Blueprint, request, jsonify, g
 from pydantic import ValidationError
 from ..models_dto import Exercise, UserSchema, UserProfileSchema
@@ -9,20 +8,17 @@ from ..services.auth_service import admin_required, jwt_required
 
 users_bp = Blueprint("users", __name__)
 
-from pydantic import ValidationError
-
 @users_bp.route("/users", methods=["POST"])
 @admin_required
 def create_user():
     try:
         user_data = request.get_json()
-        user = UserSchema.model_validate(user_data)
+        user = UserSchema(**user_data)
         created_user = create_user_service(user)
-        return jsonify(created_user.model_dump()), 201
+        return jsonify(created_user.dict()), 201
     except ValidationError as e:
         return jsonify({"error": "Invalid user data", "details": e.errors()}), 400
     except Exception as e:
-        # Log exception for debugging
         import traceback
         traceback.print_exc()
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
@@ -32,7 +28,7 @@ def create_user():
 def get_all_users():
     try:
         users = get_all_users_service()
-        return jsonify([user.model_dump() for user in users]), 200
+        return jsonify([user.dict() for user in users]), 200
     except Exception as e:
         return jsonify({"error": "Error retrieving users", "details": str(e)}), 500
 
@@ -40,8 +36,8 @@ def get_all_users():
 def create_bootstrap_admin():
     try:
         bootstrap_key = request.headers.get('X-Bootstrap-Key')
-        BOOTSTRAP_KEY = "bootstrap-secret-key"  # Or import from config/env
-        
+        BOOTSTRAP_KEY = "bootstrap-secret-key"  # Ideally import from env/config
+
         if not bootstrap_key or bootstrap_key != BOOTSTRAP_KEY:
             return jsonify({"error": "Invalid bootstrap key"}), 401
 
@@ -54,9 +50,9 @@ def create_bootstrap_admin():
 
         admin_data = request.get_json()
         admin_data["role"] = "admin"
-        admin_user = UserSchema.model_validate(admin_data)
+        admin_user = UserSchema(**admin_data)
         created_admin = create_user_service(admin_user)
-        return jsonify(created_admin.model_dump()), 201
+        return jsonify(created_admin.dict()), 201
 
     except ValidationError as e:
         return jsonify({"error": "Invalid admin data", "details": e.errors()}), 400
@@ -69,11 +65,11 @@ def onboard_user():
     try:
         user_email = g.user_email
         profile_data = request.get_json()
-        profile = UserProfileSchema.model_validate(profile_data)
+        profile = UserProfileSchema(**profile_data)
         updated_profile = update_user_profile(user_email, profile)
         if not updated_profile:
             return jsonify({"error": "User not found"}), 404
-        return jsonify(updated_profile.model_dump()), 200
+        return jsonify(updated_profile.dict()), 200
     except ValidationError as e:
         return jsonify({"error": "Invalid profile data", "details": e.errors()}), 400
     except Exception as e:
@@ -87,7 +83,6 @@ def get_profile():
         profile = get_user_profile(user_email)
         if not profile:
             return jsonify({"error": "User not found"}), 404
-        return jsonify(profile.model_dump()), 200
+        return jsonify(profile.dict()), 200
     except Exception as e:
         return jsonify({"error": "Error retrieving profile", "details": str(e)}), 500
-

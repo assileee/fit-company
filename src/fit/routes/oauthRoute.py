@@ -18,7 +18,8 @@ def login():
         else:
             login_data = request.get_json()
 
-        login_schema = LoginSchema.model_validate(login_data)
+        login_schema = LoginSchema(**login_data)  # Fixed for Pydantic v1
+
         user = authenticate_user(login_schema.email, login_schema.password)
         if not user:
             return jsonify({"error": "Invalid credentials"}), 401
@@ -29,7 +30,7 @@ def login():
             "name": user.name,
             "role": user.role,
             "iss": "fit-api",
-            "iat": datetime.datetime.now(datetime.UTC),
+            "iat": datetime.datetime.now(datetime.timezone.utc),  # Fixed UTC timezone
         }
 
         access_token = create_access_token(
@@ -42,7 +43,7 @@ def login():
             token_type="bearer"
         )
 
-        response_data = token.model_dump()
+        response_data = token.dict()  # Fixed for Pydantic v1
         response_data["onboarded"] = user.onboarded
 
         return jsonify(response_data), 200
