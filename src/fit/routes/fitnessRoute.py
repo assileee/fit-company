@@ -34,25 +34,27 @@ def get_exercise(exercise_id):
 @jwt_required
 def get_wod():
     try:
-        exercises_with_muscles = request_wod()
+        user_email = g.user_email  # From JWT middleware
+        exercises_with_muscles = request_wod(user_email)
+
         wod_exercises = []
-        for exercise, muscle_groups in exercises_with_muscles:
+        for exercise_dict, muscle_groups_dicts in exercises_with_muscles:
             muscle_impacts = [
                 MuscleGroupImpact(
-                    id=mg.id,
-                    name=mg.name,
-                    body_part=mg.body_part,
-                    is_primary=is_primary,
-                    intensity=calculate_intensity(exercise.difficulty) * (1.2 if is_primary else 0.8)
+                    id=mg["id"],
+                    name=mg["name"],
+                    body_part=mg["body_part"],
+                    is_primary=mg["is_primary"],
+                    intensity=calculate_intensity(exercise_dict["difficulty"]) * (1.2 if mg["is_primary"] else 0.8)
                 )
-                for mg, is_primary in muscle_groups
+                for mg in muscle_groups_dicts
             ]
 
             wod_exercise = WodExerciseSchema(
-                id=exercise.id,
-                name=exercise.name,
-                description=exercise.description,
-                difficulty=exercise.difficulty,
+                id=exercise_dict["id"],
+                name=exercise_dict["name"],
+                description=exercise_dict["description"],
+                difficulty=exercise_dict["difficulty"],
                 muscle_groups=muscle_impacts,
                 suggested_weight=random.uniform(5.0, 50.0),
                 suggested_reps=random.randint(8, 15)
@@ -64,7 +66,7 @@ def get_wod():
             generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat()
         )
 
-        return jsonify(response.dict()), 200  
+        return jsonify(response.dict()), 200
 
     except Exception as e:
         return jsonify({"error": "Error generating workout of the day", "details": str(e)}), 500

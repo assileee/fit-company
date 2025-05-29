@@ -7,9 +7,25 @@ meta {
 post {
   url: {{endpoint}}/users
   body: json
-  auth: inherit
+  auth: oauth2
 }
 
+auth:oauth2 {
+  grant_type: password
+  access_token_url: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLmRvZUBtYWlsLmNvbSIsIm5hbWUiOiJKYW5lIERvZSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImZpdC1hcGkiLCJpYXQiOjE3NDg0NjA3MjIsImV4cCI6MTc0ODQ2NDMyMn0.35XQdJGuexFY1Fbl2xwxIQyvbYlMr7nQEd7_OmQdND4
+  refresh_token_url: 
+  username: jane.doe@gmail.com
+  password: 
+  client_id: 
+  client_secret: 
+  scope: 
+  credentials_placement: body
+  credentials_id: credentials
+  token_placement: header
+  token_header_prefix: Bearer
+  auto_fetch_token: true
+  auto_refresh_token: false
+}
 
 body:json {
   {

@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
+from sqlalchemy import UniqueConstraint
+
 
 class UserModel(Base):
     __tablename__ = "users"
@@ -64,4 +66,20 @@ class ExerciseModel(Base):
     def __repr__(self):
         return f"<Exercise(id={self.id}, name='{self.name}', difficulty={self.difficulty})>" 
 
+from sqlalchemy import UniqueConstraint
+from datetime import datetime, timezone
 
+class UserExerciseHistory(Base):
+    __tablename__ = "user_exercise_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, ForeignKey("users.email", ondelete="CASCADE"), nullable=False)
+    exercise_id = Column(Integer, ForeignKey("exercises.id", ondelete="CASCADE"), nullable=False)
+    date_performed = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('user_email', 'exercise_id', 'date_performed', name='_user_exercise_day_uc'),
+    )
+
+    def __repr__(self):
+        return f"<UserExerciseHistory(user_email='{self.user_email}', exercise_id={self.exercise_id}, date_performed={self.date_performed})>"
