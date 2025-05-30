@@ -3,16 +3,24 @@ import { check, sleep } from 'k6';
 
 export let options = {
   stages: [
-    { duration: '1m', target: 2 }, 
-    { duration: '4m', target: 2 },  
-    { duration: '30s', target: 0 },  
+    { duration: '30s', target: 10 }, // Ramp-up to 10 VUs in 30s
+    { duration: '30s', target: 15 }, // Hold at 15 VUs for 30s
+    { duration: '30s', target: 50 }, // Ramp-up to 50 VUs over 30s
+    { duration: '30s', target: 75 }, // Ramp-up to 75 VUs over 30s
+    { duration: '30s', target: 100 }, // Ramp-up to 100 VUs over 30s
+    { duration: '1m', target: 100 }, // Hold at 100 VUs for 1 minute
+    { duration: '30s', target: 50 }, // Ramp-down to 50 VUs in 30 seconds
+    { duration: '30s', target: 10 },  // Ramp-down to 10 VUs in 30s
+    { duration: '1m', target: 0 },  // Ramp-down to 0 VUs in 1 minute (graceful stop)
+
+
   ],
 };
 
 export default function () {
   const res = http.get('http://localhost:5001/fitness/wod', {
   headers: {
-    Authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLmRvZUBtYWlsLmNvbSIsIm5hbWUiOiJKYW5lIERvZSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImZpdC1hcGkiLCJpYXQiOjE3NDg0NjU0MjUsImV4cCI6MTc0ODQ2OTAyNX0.Jltz_TNZgojDUJwMyPx6yySCarF0AzDrJJoGU_Bd_BY'
+    Authorization: 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYW5lLmRvZUBtYWlsLmNvbSIsIm5hbWUiOiJqYW5lIGRvZSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImZpdC1hcGkiLCJpYXQiOjE3NDg2MDg4MTEsImV4cCI6MTc0ODYxMDYxMX0.0Gco-dSPtqWMuwtP-Z33VZrQoSl43AXVEX4bttiqyZo'
   },
 });
 
