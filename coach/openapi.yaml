@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Coach Service API
+  description: API for generating Workout of the Day (WOD)
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:5002
+    description: Local Coach Service
+
+paths:
+  /api/coach/wod:
+    post:
+      summary: Generate a Workout of the Day (WOD)
+      description: Returns a randomized list of exercises excluding any already done today.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_email
+              properties:
+                user_email:
+                  type: string
+                  format: email
+                  example: john.doe@mail.com
+                excluded_ids:
+                  type: array
+                  items:
+                    type: integer
+                  example: [1, 2, 3]
+      responses:
+        '200':
+          description: Successfully generated WOD
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exercises:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        difficulty:
+                          type: integer
+                        equipment:
+                          type: string
+                        instructions:
+                          type: string
+                        muscle_groups:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              name:
+                                type: string
+                              body_part:
+                                type: string
+                              is_primary:
+                                type: boolean
+                              intensity:
+                                type: number
+        '400':
+          description: Missing or invalid input
+        '500':
+          description: Internal server error while generating WOD
