@@ -70,3 +70,26 @@ def get_wod():
 
     except Exception as e:
         return jsonify({"error": "Error generating workout of the day", "details": str(e)}), 500
+    
+@fitness_bp.route("/internal/user-history", methods=["GET"])
+def get_user_history():
+    from ..models_db import UserExerciseHistory
+    from ..database import db_session
+    from datetime import datetime, timezone
+
+    user_email = request.args.get("user_email")
+    if not user_email:
+        return jsonify({"error": "Missing user_email"}), 400
+
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    db = db_session()
+    try:
+        history = db.query(UserExerciseHistory.exercise_id)\
+                    .filter(UserExerciseHistory.user_email == user_email)\
+                    .filter(UserExerciseHistory.date_performed >= today)\
+                    .all()
+        ids = [row.exercise_id for row in history]
+        return jsonify({"exercise_ids": ids}), 200
+    finally:
+        db.close()

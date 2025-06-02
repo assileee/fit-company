@@ -34,6 +34,19 @@ services:
       - .:/app
     networks:
       - fit
+  coach:
+    build:
+      context: .
+      dockerfile: coach/Dockerfile
+    ports:
+      - "5002:5000"
+    depends_on:
+      - api
+    environment:
+      - MONOLITH_URL=http://api:5000
+    networks:
+      - fit
+
 
 networks:
   fit:

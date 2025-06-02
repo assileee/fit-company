@@ -17,8 +17,8 @@ COPY . .
 EXPOSE 5001
 
 # Set environment variables
-ENV FLASK_APP=src/fit/app.py
+ENV PYTHONPATH=/app
 ENV FLASK_RUN_HOST=0.0.0.0
 
-# Start the Flask app
-CMD ["flask", "run"]
+# Start the Flask app correctly (fixes relative import issue)
+CMD ["python", "-m", "src.fit.app"]
