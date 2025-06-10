@@ -8,7 +8,7 @@ import logging
 
 from .models_dto import MuscleGroupImpact, WodExerciseSchema, WodResponseSchema
 
-from .fitness_coach_service import calculate_intensity, request_wod
+from .fitness_coach_service import calculate_intensity, request_wod, get_latest_wod_for_user
 
 from .fitness_service import get_exercises_by_muscle_group, get_all_exercises, get_exercise_by_id
 
@@ -117,4 +117,25 @@ def run_app():
 
 if __name__ == "__main__":
     run_app()
+@app.route("/wod", methods=["GET"])
+def get_user_wod():
+    user_email = request.args.get("email")
+    if not user_email:
+        return jsonify({"error": "Missing user email"}), 400
+
+    try:
+        exercises = get_latest_wod_for_user(user_email)
+        if not exercises:
+            return jsonify({"wod": [], "message": "No WOD found"}), 200
+
+        return jsonify([
+            {
+                "id": ex.id,
+                "name": ex.name,
+                "description": ex.description,
+                "difficulty": ex.difficulty
+            } for ex in exercises
+        ]), 200
+    except Exception as e:
+        return jsonify({"error": "Could not retrieve WOD", "details": str(e)}), 500
 

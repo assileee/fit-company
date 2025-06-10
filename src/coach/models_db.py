@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, Table, Text
 from sqlalchemy.orm import relationship
 from .database import Base
+from sqlalchemy import DateTime, func
 
 # Junction table for the many-to-many relationship between exercises and muscle groups
 exercise_muscle_groups = Table(
@@ -49,3 +50,10 @@ class ExerciseModel(Base):
     def __repr__(self):
         return f"<Exercise(id={self.id}, name='{self.name}', difficulty={self.difficulty})>"
 
+class WodModel(Base):
+    __tablename__ = "wods"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String(100), nullable=False)
+    exercise_ids = Column(Text, nullable=False)  # store as comma-separated IDs
+    created_at = Column(DateTime, server_default=func.now())
