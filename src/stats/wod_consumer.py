@@ -36,6 +36,7 @@ def callback(ch, method, properties, body):
         print("[x] Failed to process message:", e)
 
 def main():
+    print("start consumer")
     init_db()
 
     credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASS)

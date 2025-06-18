@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 from database import db_session, init_db
 from models import WorkoutStat
+from threading import Thread
+from wod_consumer import main as run_consumer  # import your RabbitMQ consumer
 
 app = Flask(__name__)
 init_db()
@@ -22,5 +24,12 @@ def get_all_stats():
         } for stat in stats
     ])
 
+def start_consumer():
+    """Start the RabbitMQ consumer in a background thread"""
+    thread = Thread(target=run_consumer, daemon=True)
+    thread.start()
+
 if __name__ == "__main__":
+    print("caelled main")
+    start_consumer()
     app.run(host="0.0.0.0", port=5002)
