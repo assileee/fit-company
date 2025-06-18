@@ -114,8 +114,27 @@ services:
     depends_on:
       stats-db:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       - STATS_DATABASE_URL=postgresql://postgres:docker@stats-db:5432/stats-db
+    networks:
+      - fit
+    
+  billing:
+    build:
+      context: ./src/billing
+      dockerfile: Dockerfile
+    ports:
+      - "12108:5003"
+    volumes:
+      - ./src/billing:/app
+    depends_on:
+      - rabbitmq
+    environment:
+    - MONOLITH_URL=http://monolith:5000
+    - BILLING_URL=http://billing:5003
+    - FIT_API_KEY=some_very_secret_key
     networks:
       - fit
 
@@ -136,6 +155,7 @@ services:
       retries: 5
     networks:
       - fit
+  
 
 networks:
   fit:

@@ -12,7 +12,9 @@ class UserModel(Base):
     role = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
     
+
     # Profile information (nullable as they'll be filled during onboarding)
+    membership = Column(String, nullable=False, default="free")
     weight = Column(Float, nullable=True)
     height = Column(Float, nullable=True)
     fitness_goal = Column(String, nullable=True)
