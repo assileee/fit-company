@@ -50,7 +50,7 @@ def save_workout_exercises(user_email: str, exercise_ids: List[int]):
     requests.post(f"{monolith_url}/workouts/", headers=headers, json={"email": user_email, "exercises": exercise_ids})
 
 
-def create_wod_for_user(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleGroupModel, bool]]]]:
+def create_wod_for_user_service(user_email: str) -> List[Tuple[ExerciseModel, List[Tuple[MuscleGroupModel, bool]]]]:
     """
     Request a workout of the day (WOD).
     Returns a list of tuples containing:
