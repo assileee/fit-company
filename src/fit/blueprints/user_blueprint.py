@@ -148,3 +148,18 @@ def get_user_goal(email):
     finally:
         db.close()
 
+@user_bp.route("/subscription/cancel", methods=["POST"])
+@jwt_required
+def cancel_subscription():
+    db = db_session()
+    try:
+        user_email = g.user_email  
+        user = db.query(UserModel).filter_by(email=user_email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        user.fitness_goal = None  
+        db.commit()
+        return jsonify({"message": "Subscription cancelled successfully"}), 200
+    finally:
+        db.close()

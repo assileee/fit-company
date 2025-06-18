@@ -105,9 +105,15 @@ class WorkoutResponseSchema(BaseModel):
     id: int
     exercises: List[WodExerciseSchema]
 
+class ExercisePerformanceSchema(BaseModel):
+    exercise_id: int
+    reps: Optional[int]
+    weight: Optional[float]
+
 class RegisterWorkoutSchema(BaseModel):
     email: str
-    exercises: List[int] = Field(..., description="List of exercise IDs performed in the workout")
+    exercises: List[ExercisePerformanceSchema]
+
 
 class WorkoutExercisesList(BaseModel):
     workout_id: int

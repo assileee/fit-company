@@ -1,40 +1,37 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Dict, Optional
 
 import requests
 from ..database import db_session
 from ..models_db import UserExerciseHistory, WorkoutModel
-from ..models_dto import ExerciseId, WodExerciseSchema, WorkoutExercisesList, WorkoutResponseSchema
+from ..models_dto import ExerciseId, WodExerciseSchema, WorkoutExercisesList, WorkoutResponseSchema, ExercisePerformanceSchema
 from sqlalchemy import func
 from .rabbitmq_service import rabbitmq_service
 
 import os
 
-def register_workout(user_email: str, exercise_ids: List[int]):
-    """
-    Create a new workout for the user with the specified exercises.
-    The workout is created with created_at set to now, but performed_at as null.
-    """
-    db = db_session() 
+def register_workout(user_email: str, exercise_data: List[ExercisePerformanceSchema]):
+    db = db_session()
     try:
-        # Create a new workout
         workout = WorkoutModel(
             user_email=user_email,
             created_at=datetime.utcnow(),
             performed_at=None
         )
         db.add(workout)
-        db.flush()  # Flush to get the workout ID
-        
-        # Add exercises to the workout
-        for exercise_id in exercise_ids:
-            exercise_entry = UserExerciseHistory(
+        db.flush()
+
+        for ex in exercise_data:
+            entry = UserExerciseHistory(
                 workout_id=workout.id,
-                exercise_id=exercise_id
+                exercise_id=ex.exercise_id,
+                reps=ex.reps,
+                weight=ex.weight
             )
-            db.add(exercise_entry)
-        
+            db.add(entry)
+
         db.commit()
+
     finally:
         db.close()
 

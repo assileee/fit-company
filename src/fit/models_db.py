@@ -48,6 +48,9 @@ class UserExerciseHistory(Base):
     workout_id = Column(Integer, ForeignKey('workouts.id'), nullable=False)
     exercise_id = Column(Integer, nullable=False)
     
+    reps = Column(Integer, nullable=True)
+    weight = Column(Float, nullable=True)
+    
     # Relationships
     workout = relationship("WorkoutModel", back_populates="exercises")
 
