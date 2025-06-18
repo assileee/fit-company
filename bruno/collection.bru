@@ -1,20 +1,7 @@
 auth {
-  mode: oauth2
+  mode: bearer
 }
 
-auth:oauth2 {
-  grant_type: password
-  access_token_url: {{endpoint}}/oauth/token
-  refresh_token_url: 
-  username: jane.doe@mail.com
-  password: {{admin-pass}}
-  client_id: 
-  client_secret: 
-  scope: 
-  credentials_placement: body
-  credentials_id: Authorization
-  token_placement: header
-  token_header_prefix: Bearer
-  auto_fetch_token: true
-  auto_refresh_token: false
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqYW5lLmRvZUBtYWlsLmNvbSIsIm5hbWUiOiJKYW5lIERvZSIsInJvbGUiOiJhZG1pbiIsImlzcyI6ImZpdC1hcGkiLCJpYXQiOjE3NDk2MzczODYsImV4cCI6MTc0OTY2NjE4Nn0.oKdCaMCyynYXCe8icA9ZoT0d0vUHNeeeXQLPIncyVio
 }

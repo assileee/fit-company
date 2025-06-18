@@ -5,6 +5,7 @@ from src.coach.queue_consumer import run_consumer
 
 def start_consumer():
     """Start the queue consumer in a separate thread"""
+    print("before start consumer")
     consumer_thread = threading.Thread(target=run_consumer, daemon=True)
     consumer_thread.start()
 

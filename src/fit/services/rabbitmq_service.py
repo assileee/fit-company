@@ -97,11 +97,38 @@ class RabbitMQService:
             logger.error(f"Failed to publish message to RabbitMQ: {str(e)}", exc_info=True)
             return False
 
+    def publish_workout_performed_event(self, event_payload: Dict[str, Any]) -> bool:
+        """
+        Publish a workout.performed event to the fanout exchange
+        """
+        try:
+            self.ensure_connection()
+
+            self.channel.exchange_declare(
+                exchange="workout.performed",
+                exchange_type="fanout"
+            )
+
+            self.channel.basic_publish(
+                exchange="workout.performed",
+                routing_key="",  # fanout ignores routing key
+                body=json.dumps(event_payload),
+                properties=pika.BasicProperties(delivery_mode=2)
+            )
+
+            logger.info(f"[x] Published workout.performed event: {event_payload}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error publishing workout.performed event: {e}", exc_info=True)
+            return False
+
     def close(self):
         """Close the connection"""
         if self.connection and not self.connection.is_closed:
             logger.info("Closing RabbitMQ connection")
             self.connection.close()
 
+
 # Create a singleton instance
-rabbitmq_service = RabbitMQService() 
+rabbitmq_service = RabbitMQService()

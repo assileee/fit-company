@@ -6,6 +6,8 @@ from ..database import db_session
 from ..models_db import UserExerciseHistory, WorkoutModel
 from ..models_dto import ExerciseId, WodExerciseSchema, WorkoutExercisesList, WorkoutResponseSchema
 from sqlalchemy import func
+from .rabbitmq_service import rabbitmq_service
+
 import os
 
 def register_workout(user_email: str, exercise_ids: List[int]):
@@ -116,6 +118,7 @@ def get_most_recent_workout_exercises(user_email: str, performed: bool) -> Optio
 def perform_workout(workout_id: int, user_email: str):
     """
     Mark a workout as performed by setting its performed_at timestamp.
+    Also publishes a workout.performed event.
     """
     db = db_session()
     try:
@@ -125,6 +128,22 @@ def perform_workout(workout_id: int, user_email: str):
         
         if workout and workout.user_email == user_email:
             workout.performed_at = datetime.utcnow()
+
+            # Get number of exercises in this workout
+            exercise_count = db.query(UserExerciseHistory).filter_by(workout_id=workout_id).count()
+
+            # Prepare workout event payload
+            event = {
+                "user_email": workout.user_email,
+                "workout_date": workout.performed_at.isoformat(),
+                "duration_min": 40,            # placeholder, replace with actual logic if needed
+                "calories_burned": 500,        # placeholder
+                "exercises_completed": exercise_count
+            }
+
+            # Publish workout.performed event
+            rabbitmq_service.publish_workout_performed_event(event)
+
             db.commit()
         else:
             raise Exception("Workout not found or user does not have access to this workout")
