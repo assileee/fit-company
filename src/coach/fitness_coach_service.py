@@ -58,17 +58,17 @@ def create_wod_for_user_service(user_email: str) -> List[Tuple[ExerciseModel, Li
     - A list of tuples containing:
       - The muscle group
       - Whether it's a primary muscle group
-    
-    Avoids repeating exercises from the user's last workout.
     """
-    # Simulate heavy computation (AI model processing, complex calculations, etc.) for 1-5 seconds
+
     logger.debug(f"running heavy computation to generate wod for user {user_email}")
-    heavy_computation(random.randint(1, 5)) # DO NOT REMOVE THIS LINE
+    heavy_computation(random.randint(1, 5))  # DO NOT REMOVE
     logger.debug(f"heavy computation completed for user {user_email}")
-    
+
     db = db_session()
-    
+
     try:
+        is_premium = is_user_premium(user_email)
+        num_exercises = 9 if is_premium else 6
 
         last_exercise_ids = get_last_workout_exercises(user_email)
 
@@ -76,20 +76,17 @@ def create_wod_for_user_service(user_email: str) -> List[Tuple[ExerciseModel, Li
             ~ExerciseModel.id.in_(last_exercise_ids)
         ).all()
 
-        # If we don't have enough exercises (excluding last workout's), include all exercises
-        if len(available_exercises) < 6:
+        if len(available_exercises) < num_exercises:
             available_exercises = db.query(ExerciseModel).all()
-        
-        # Select 6 random exercises
-        selected_exercises = random.sample(available_exercises, 6) if len(available_exercises) >= 6 else available_exercises
-        
-        # Store today's exercises in history
+
+        selected_exercises = random.sample(
+            available_exercises, num_exercises
+        ) if len(available_exercises) >= num_exercises else available_exercises
+
         save_workout_exercises(user_email, [exercise.id for exercise in selected_exercises])
-        
-        # For each exercise, get its muscle groups and whether they are primary
+
         result = []
         for exercise in selected_exercises:
-            # Get the junction table information for this exercise
             stmt = db.query(
                 MuscleGroupModel,
                 exercise_muscle_groups.c.is_primary
@@ -99,9 +96,17 @@ def create_wod_for_user_service(user_email: str) -> List[Tuple[ExerciseModel, Li
             ).filter(
                 exercise_muscle_groups.c.exercise_id == exercise.id
             )
-            
+
             muscle_groups = [(mg, is_primary) for mg, is_primary in stmt.all()]
             result.append((exercise, muscle_groups))
         return result
+
     finally:
         db.close()
+
+def is_user_premium(email: str) -> bool:
+    fit_url = os.getenv("MONOLITH_URL", "http://monolith:5000")  # monolith
+    resp = requests.get(f"{fit_url}/users/{email}/goal")
+    if resp.status_code == 200:
+        return resp.json().get("fitness_goal") == "premium"
+    return False

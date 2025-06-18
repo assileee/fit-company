@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, g, current_app
 from pydantic import ValidationError
 
+from ..models_db import UserModel        
+from ..database import db_session
 from ..queue_messages import CreateWodMessage
 from ..models_dto import UserSchema, UserProfileSchema
 from ..services.user_service import (
@@ -134,3 +136,15 @@ def get_profile():
     except Exception as e:
         current_app.logger.error(f"Error retrieving profile for user {g.user_email}: {str(e)}")
         return jsonify({"error": "Error retrieving profile", "details": str(e)}), 500
+
+@user_bp.route("/users/<email>/goal", methods=["GET"])
+def get_user_goal(email):
+    db = db_session()
+    try:
+        user = db.query(UserModel).filter_by(email=email).first()
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        return jsonify({"fitness_goal": user.fitness_goal})
+    finally:
+        db.close()
+
